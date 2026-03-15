@@ -246,6 +246,88 @@
   @keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
   .fade-up{opacity:0;animation:fadeUp 0.6s ease forwards;}
   .d1{animation-delay:0.1s;}.d2{animation-delay:0.25s;}.d3{animation-delay:0.4s;}.d4{animation-delay:0.55s;}
+
+  /* ── OWNER LOGIN MODAL ── */
+  .owner-modal-bg{
+    display:none;position:fixed;inset:0;z-index:3000;
+    background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);
+    align-items:center;justify-content:center;
+  }
+  .owner-modal-bg.open{display:flex;}
+  .owner-modal{
+    background:white;border-radius:24px;padding:44px 40px;width:100%;max-width:400px;
+    box-shadow:0 24px 64px rgba(0,0,0,0.25);position:relative;text-align:center;
+    animation:fadeUp 0.3s ease forwards;
+  }
+  .owner-modal .om-icon{font-size:48px;margin-bottom:12px;}
+  .owner-modal h2{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--deep-green);margin-bottom:6px;}
+  .owner-modal p{font-size:14px;color:var(--text-muted);margin-bottom:28px;}
+  .owner-modal input{
+    width:100%;padding:13px 16px;border:1.5px solid #E0D8CC;border-radius:10px;
+    font-size:15px;font-family:'DM Sans',sans-serif;outline:none;
+    transition:border-color 0.2s;margin-bottom:14px;text-align:center;letter-spacing:3px;
+  }
+  .owner-modal input:focus{border-color:var(--saffron);}
+  .owner-modal .om-login-btn{
+    width:100%;background:var(--deep-green);color:white;border:none;
+    padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;
+    transition:background 0.2s;margin-bottom:10px;
+  }
+  .owner-modal .om-login-btn:hover{background:var(--mid-green);}
+  .owner-modal .om-cancel{background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;text-decoration:underline;}
+  .om-error{color:#e53e3e;font-size:13px;margin-bottom:12px;display:none;font-weight:500;}
+  .om-close{position:absolute;top:16px;right:18px;background:none;border:none;font-size:22px;cursor:pointer;color:#999;}
+
+  /* ── OWNER MODE BADGE ── */
+  .owner-badge{
+    position:fixed;bottom:100px;right:28px;z-index:900;
+    background:var(--deep-green);color:white;
+    padding:10px 18px;border-radius:30px;font-size:13px;font-weight:600;
+    box-shadow:0 4px 18px rgba(14,77,58,0.35);cursor:pointer;
+    display:none;align-items:center;gap:8px;transition:background 0.2s;
+  }
+  .owner-badge:hover{background:#c0392b;}
+  .owner-badge.visible{display:flex;}
+
+  /* ── OWNER LOGIN TRIGGER (tiny lock in footer) ── */
+  .owner-lock-btn{
+    background:none;border:none;color:rgba(255,255,255,0.25);
+    font-size:13px;cursor:pointer;padding:4px 8px;border-radius:6px;
+    transition:color 0.2s;letter-spacing:0.5px;
+  }
+  .owner-lock-btn:hover{color:rgba(255,255,255,0.6);}
+
+  /* ── HIDE ALL UPLOAD CONTROLS BY DEFAULT (visitor mode) ── */
+  body:not(.owner-mode) .nav-logo{pointer-events:none;cursor:default;}
+  body:not(.owner-mode) .logo-change-overlay{display:none !important;}
+  body:not(.owner-mode) .logo-tooltip{display:none !important;}
+  body:not(.owner-mode) #logoInput{display:none !important;}
+
+  body:not(.owner-mode) .upload-circle{pointer-events:none;cursor:default;}
+  body:not(.owner-mode) .upload-placeholder strong::after{content:'';}
+
+  body:not(.owner-mode) .about-img-holder{pointer-events:none;cursor:default;}
+
+  body:not(.owner-mode) .gallery-btn.add{display:none !important;}
+  body:not(.owner-mode) .del-btn{display:none !important;}
+
+  body:not(.owner-mode) .therapy-photo{pointer-events:none;cursor:default;}
+  body:not(.owner-mode) .therapy-photo-hint{display:none !important;}
+  body:not(.owner-mode) .tp-change-btn{display:none !important;}
+
+  /* In owner mode — show upload hints on hero/about */
+  body.owner-mode .upload-circle{pointer-events:auto;cursor:pointer;}
+  body.owner-mode .about-img-holder{pointer-events:auto;cursor:pointer;}
+  body.owner-mode .nav-logo{pointer-events:auto;cursor:pointer;}
+  body.owner-mode .therapy-photo{pointer-events:auto;cursor:pointer;}
+
+  /* Owner mode indicator ring on upload areas */
+  body.owner-mode .upload-circle{border-color:var(--saffron) !important;}
+  body.owner-mode .about-img-holder::after{
+    content:'✏️ Owner Mode';position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+    background:rgba(14,77,58,0.8);color:white;padding:4px 12px;border-radius:20px;
+    font-size:11px;font-weight:600;pointer-events:none;white-space:nowrap;
+  }
 </style>
 </head>
 <body>
@@ -591,7 +673,10 @@
   </div>
   <div class="footer-bottom">
     <p>© 2025 Shree Ganpati Health Center<span class="saffron-dot"> ✦</span> All Rights Reserved.</p>
-    <p style="font-size:12px;">WZ-3B, Phase 4, Om Vihar, Uttam Nagar, Delhi 110059</p>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <p style="font-size:12px;">WZ-3B, Phase 4, Om Vihar, Uttam Nagar, Delhi 110059</p>
+      <button class="owner-lock-btn" onclick="openOwnerModal()" title="Owner Login">🔒</button>
+    </div>
   </div>
 </footer>
 
@@ -599,7 +684,67 @@
   <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 </a>
 
+<!-- OWNER LOGIN MODAL -->
+<div class="owner-modal-bg" id="ownerModalBg">
+  <div class="owner-modal">
+    <button class="om-close" onclick="closeOwnerModal()">✕</button>
+    <div class="om-icon">🔐</div>
+    <h2>Owner Login</h2>
+    <p>Enter your password to enable photo & logo uploads</p>
+    <p class="om-error" id="omError">❌ Incorrect password. Please try again.</p>
+    <input type="password" id="ownerPwInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkOwnerPw()">
+    <button class="om-login-btn" onclick="checkOwnerPw()">🔓 Login as Owner</button>
+    <button class="om-cancel" onclick="closeOwnerModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- OWNER MODE ACTIVE BADGE -->
+<div class="owner-badge" id="ownerBadge" onclick="ownerLogout()">
+  ✏️ Owner Mode ON &nbsp;·&nbsp; Click to Logout
+</div>
+
 <script>
+/* ══════════════════════════════════
+   OWNER PASSWORD — change this!
+   ══════════════════════════════════ */
+const OWNER_PASSWORD = 'Ganpati@2025';
+
+/* ── OWNER AUTH ── */
+let ownerMode = false;
+
+function openOwnerModal(){
+  document.getElementById('ownerPwInput').value='';
+  document.getElementById('omError').style.display='none';
+  document.getElementById('ownerModalBg').classList.add('open');
+  setTimeout(()=>document.getElementById('ownerPwInput').focus(),100);
+}
+function closeOwnerModal(){
+  document.getElementById('ownerModalBg').classList.remove('open');
+}
+function checkOwnerPw(){
+  const val=document.getElementById('ownerPwInput').value;
+  if(val===OWNER_PASSWORD){
+    ownerMode=true;
+    document.body.classList.add('owner-mode');
+    document.getElementById('ownerBadge').classList.add('visible');
+    closeOwnerModal();
+  } else {
+    document.getElementById('omError').style.display='block';
+    document.getElementById('ownerPwInput').value='';
+    document.getElementById('ownerPwInput').focus();
+  }
+}
+function ownerLogout(){
+  if(!confirm('Exit owner mode? Upload controls will be hidden.'))return;
+  ownerMode=false;
+  document.body.classList.remove('owner-mode');
+  document.getElementById('ownerBadge').classList.remove('visible');
+}
+function requireOwner(){
+  if(!ownerMode){ openOwnerModal(); return false; }
+  return true;
+}
+
 /* ── LOGO ── */
 function changeLogo(inp){
   if(!inp.files[0])return;
@@ -611,6 +756,11 @@ function changeLogo(inp){
   };
   r.readAsDataURL(inp.files[0]);
 }
+// Intercept logo click — only open file picker if owner
+document.querySelector('.nav-logo').addEventListener('click',function(e){
+  if(!ownerMode){ e.preventDefault(); e.stopPropagation(); return; }
+  document.getElementById('logoInput').click();
+});
 
 /* ── HERO MEDIA ── */
 function loadHeroMedia(inp){
@@ -630,6 +780,10 @@ function loadHeroMedia(inp){
   };
   r.readAsDataURL(f);
 }
+document.getElementById('heroCircle').addEventListener('click',function(e){
+  if(!ownerMode){e.preventDefault();e.stopPropagation();}
+  else document.getElementById('heroMediaInput').click();
+});
 
 /* ── ABOUT MEDIA ── */
 function loadAboutMedia(inp){
@@ -649,11 +803,16 @@ function loadAboutMedia(inp){
   };
   r.readAsDataURL(f);
 }
+document.getElementById('aboutMediaInput').previousElementSibling.addEventListener('click',function(e){
+  if(!ownerMode){e.preventDefault();e.stopPropagation();}
+  else document.getElementById('aboutMediaInput').click();
+},{capture:true});
 
 /* ── GALLERY ── */
 let items=[], activeFilter='all', lbIdx=0;
 
 function addMedia(inp,type){
+  if(!requireOwner())return;
   Array.from(inp.files).forEach(f=>{
     const r=new FileReader();
     r.onload=e=>{ items.push({src:e.target.result,type,name:f.name}); renderGallery(); };
@@ -671,7 +830,7 @@ function renderGallery(){
   count.textContent=items.length>0?`${photos} photo${photos!==1?'s':''} · ${videos} video${videos!==1?'s':''} uploaded`:'';
 
   if(filtered.length===0){
-    grid.innerHTML=`<div class="gallery-empty"><div class="icon">📸</div><p>No media yet.<br>Click <strong>"＋ Add Photos"</strong> or <strong>"＋ Add Videos"</strong> to start uploading!</p></div>`;
+    grid.innerHTML=`<div class="gallery-empty"><div class="icon">📸</div><p>No photos or videos added yet.</p></div>`;
     return;
   }
   grid.innerHTML=filtered.map(item=>{
@@ -680,13 +839,13 @@ function renderGallery(){
       return `<div class="media-item" data-type="photo">
         <img src="${item.src}" alt="${item.name}" loading="lazy" onclick="lbOpen(${ri})">
         <span class="media-badge">📷 Photo</span>
-        <button class="del-btn" onclick="delMedia(event,${ri})">✕</button>
+        ${ownerMode?`<button class="del-btn" onclick="delMedia(event,${ri})">✕</button>`:''}
       </div>`;
     } else {
       return `<div class="media-item" data-type="video">
         <video src="${item.src}" muted loop playsinline onclick="lbOpen(${ri})" onmouseenter="this.play()" onmouseleave="this.pause()"></video>
         <span class="media-badge">🎥 Video</span>
-        <button class="del-btn" onclick="delMedia(event,${ri})">✕</button>
+        ${ownerMode?`<button class="del-btn" onclick="delMedia(event,${ri})">✕</button>`:''}
       </div>`;
     }
   }).join('');
@@ -694,9 +853,9 @@ function renderGallery(){
 
 function delMedia(e,ri){
   e.stopPropagation();
+  if(!ownerMode)return;
   if(confirm('Remove this media?')){ items.splice(ri,1); renderGallery(); }
 }
-
 function filterMedia(f,btn){
   activeFilter=f;
   document.querySelectorAll('.g-btn:not(.add)').forEach(b=>b.classList.remove('active'));
@@ -715,22 +874,18 @@ function lbShow(){
   const inner=document.getElementById('lbInner');
   inner.querySelectorAll('img,video').forEach(el=>el.remove());
   if(item.type==='photo'){
-    const img=document.createElement('img');
-    img.src=item.src; inner.appendChild(img);
+    const img=document.createElement('img'); img.src=item.src; inner.appendChild(img);
   } else {
-    const v=document.createElement('video');
-    v.src=item.src; v.controls=true; v.autoplay=true; inner.appendChild(v);
+    const v=document.createElement('video'); v.src=item.src; v.controls=true; v.autoplay=true; inner.appendChild(v);
   }
-  document.getElementById('lbCaption').textContent=`${lbIdx+1} / ${items.length}  ·  ${item.name||''}`;
+  document.getElementById('lbCaption').textContent=`${lbIdx+1} / ${items.length}`;
 }
 function lbNav(dir,e){
   if(e)e.stopPropagation();
-  inner.querySelectorAll&&inner.querySelectorAll('video').forEach(v=>v.pause());
+  document.getElementById('lbInner').querySelectorAll('video').forEach(v=>v.pause());
   lbIdx=(lbIdx+dir+items.length)%items.length; lbShow();
 }
-function lbClose(e){
-  if(e.target===document.getElementById('lb')) lbCloseBtn();
-}
+function lbClose(e){ if(e.target===document.getElementById('lb')) lbCloseBtn(); }
 function lbCloseBtn(){
   document.getElementById('lbInner').querySelectorAll('video').forEach(v=>v.pause());
   document.getElementById('lb').classList.remove('open');
@@ -744,7 +899,10 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ── THERAPY PHOTOS ── */
-function triggerTP(idx){ document.getElementById('tpIn'+idx).click(); }
+function triggerTP(idx){
+  if(!requireOwner())return;
+  document.getElementById('tpIn'+idx).click();
+}
 function loadTP(inp,idx){
   if(!inp.files[0])return;
   const r=new FileReader();

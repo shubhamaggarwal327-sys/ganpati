@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shree Ganpati Health Center – Physiotherapy & Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --saffron:#E8871A;--saffron-light:#F5A94B;--saffron-glow:rgba(232,135,26,0.15);
+    --deep-green:#0E4D3A;--mid-green:#1A6B52;--cream:#FDF8F0;
+    --warm-white:#FFFBF4;--charcoal:#1C1C1C;--text-muted:#5A5A5A;--gold:#C9992F;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'DM Sans',sans-serif;background:var(--warm-white);color:var(--charcoal);overflow-x:hidden;}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;align-items:center;justify-content:space-between;padding:14px 5%;background:rgba(14,77,58,0.97);backdrop-filter:blur(12px);border-bottom:1px solid rgba(232,135,26,0.3);}
+  .nav-logo{display:flex;align-items:center;gap:12px;cursor:pointer;position:relative;}
+  .logo-img-wrap{width:48px;height:48px;border-radius:50%;overflow:hidden;background:var(--saffron);display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.25);flex-shrink:0;position:relative;}
+  .logo-img-wrap img{width:100%;height:100%;object-fit:cover;display:none;}
+  .logo-default-icon{font-size:24px;}
+  .logo-change-overlay{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.55);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;color:white;font-size:9px;text-align:center;line-height:1.4;gap:2px;}
+  .logo-change-overlay svg{width:16px;height:16px;}
+  .nav-logo:hover .logo-change-overlay{opacity:1;}
+  #logoInput{display:none;}
+  .logo-tooltip{position:absolute;top:58px;left:0;background:white;color:var(--charcoal);font-size:11.5px;padding:6px 12px;border-radius:8px;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.15);display:none;z-index:10;pointer-events:none;}
+  .nav-logo:hover .logo-tooltip{display:block;}
+  .nav-logo-text{color:white;}
+  .nav-logo-text strong{display:block;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;}
+  .nav-logo-text span{font-size:11px;color:var(--saffron-light);letter-spacing:1px;text-transform:uppercase;}
+  .nav-links{display:flex;gap:26px;list-style:none;}
+  .nav-links a{color:rgba(255,255,255,0.85);text-decoration:none;font-size:14px;font-weight:500;transition:color 0.2s;}
+  .nav-links a:hover{color:var(--saffron-light);}
+  .nav-cta{background:var(--saffron);color:white;border:none;padding:10px 22px;border-radius:30px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:background 0.2s,transform 0.15s;}
+  .nav-cta:hover{background:var(--saffron-light);transform:translateY(-1px);}
+
+  /* HERO */
+  .hero{min-height:100vh;background:linear-gradient(135deg,var(--deep-green) 0%,var(--mid-green) 55%,#1e7a5c 100%);display:flex;align-items:center;position:relative;overflow:hidden;padding-top:80px;}
+  .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(232,135,26,0.12) 0%,transparent 60%),radial-gradient(ellipse at 10% 80%,rgba(255,255,255,0.04) 0%,transparent 50%);}
+  .hero-pattern{position:absolute;right:-60px;top:50%;transform:translateY(-50%);width:600px;height:600px;opacity:0.06;background-image:repeating-conic-gradient(var(--saffron) 0% 10%,transparent 10% 50%);border-radius:50%;}
+  .hero-content{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:0 5%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(232,135,26,0.2);border:1px solid rgba(232,135,26,0.4);padding:6px 16px;border-radius:20px;margin-bottom:20px;}
+  .hero-badge span{color:var(--saffron-light);font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;}
+  .hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(42px,5vw,68px);color:white;line-height:1.1;font-weight:700;margin-bottom:20px;}
+  .hero h1 em{color:var(--saffron-light);font-style:italic;}
+  .hero>div>p,.hero-content>div>p{color:rgba(255,255,255,0.75);font-size:17px;line-height:1.7;max-width:480px;margin-bottom:36px;}
+  .hero-btns{display:flex;gap:16px;flex-wrap:wrap;}
+  .btn-primary{background:var(--saffron);color:white;padding:14px 32px;border-radius:40px;font-weight:600;font-size:15px;text-decoration:none;transition:all 0.25s;border:2px solid var(--saffron);display:inline-block;}
+  .btn-primary:hover{background:var(--saffron-light);transform:translateY(-2px);box-shadow:0 8px 24px rgba(232,135,26,0.4);}
+  .btn-ghost{border:2px solid rgba(255,255,255,0.4);color:white;padding:14px 32px;border-radius:40px;font-weight:600;font-size:15px;text-decoration:none;transition:all 0.25s;display:inline-block;}
+  .btn-ghost:hover{border-color:white;background:rgba(255,255,255,0.1);}
+  .hero-visual{position:relative;display:flex;justify-content:center;align-items:center;}
+  .upload-ring{position:absolute;inset:-12px;border-radius:50%;border:2px dashed rgba(232,135,26,0.25);animation:spin 20s linear infinite;pointer-events:none;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .upload-circle{width:360px;height:360px;border-radius:50%;border:3px solid rgba(232,135,26,0.5);overflow:hidden;position:relative;cursor:pointer;background:rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;transition:border-color 0.3s;}
+  .upload-circle:hover{border-color:var(--saffron);}
+  .upload-circle img,.upload-circle video{width:100%;height:100%;object-fit:cover;display:none;}
+  .upload-placeholder{text-align:center;color:rgba(255,255,255,0.7);padding:30px;}
+  .upload-placeholder svg{margin-bottom:12px;opacity:0.6;}
+  .upload-placeholder strong{color:var(--saffron-light);display:block;font-size:16px;margin-bottom:6px;}
+  .upload-placeholder p{font-size:13px;line-height:1.5;}
+  #heroMediaInput{display:none;}
+  .hero-stats{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);display:flex;background:white;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);overflow:hidden;}
+  .stat-box{padding:16px 24px;text-align:center;border-right:1px solid #f0f0f0;}
+  .stat-box:last-child{border-right:none;}
+  .stat-box strong{display:block;font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--deep-green);font-weight:700;}
+  .stat-box span{font-size:11px;color:var(--text-muted);letter-spacing:0.5px;text-transform:uppercase;}
+
+  /* SECTION COMMON */
+  .section-tag{display:inline-block;color:var(--saffron);font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+  .section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(34px,4vw,52px);font-weight:700;line-height:1.15;color:var(--deep-green);margin-bottom:16px;}
+  .section-sub{font-size:16px;color:var(--text-muted);max-width:580px;line-height:1.7;}
+
+  /* ABOUT */
+  .about-wrap{padding:90px 5%;background:var(--cream);}
+  .about-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center;}
+  .about-img-block{position:relative;}
+  .about-img-holder{width:100%;aspect-ratio:4/5;border-radius:24px;background:linear-gradient(135deg,var(--mid-green),var(--deep-green));overflow:hidden;position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .about-img-holder img,.about-img-holder video{width:100%;height:100%;object-fit:cover;display:none;}
+  .about-upload-hint{color:rgba(255,255,255,0.6);text-align:center;font-size:13px;padding:20px;}
+  .about-upload-hint svg{display:block;margin:0 auto 10px;}
+  #aboutMediaInput{display:none;}
+  .about-badge-float{position:absolute;bottom:-20px;right:-20px;background:var(--saffron);color:white;padding:18px 22px;border-radius:16px;box-shadow:0 8px 24px rgba(232,135,26,0.4);text-align:center;}
+  .about-badge-float strong{display:block;font-family:'Cormorant Garamond',serif;font-size:32px;}
+  .about-badge-float span{font-size:12px;opacity:0.9;}
+  .about-text p{font-size:15.5px;color:var(--text-muted);line-height:1.8;margin-bottom:16px;}
+  .about-highlights{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px;}
+  .highlight-item{display:flex;align-items:flex-start;gap:10px;background:white;padding:14px 16px;border-radius:12px;border-left:3px solid var(--saffron);}
+  .highlight-item span{font-size:13.5px;font-weight:500;color:var(--deep-green);}
+
+  /* GALLERY */
+  .gallery-section{padding:90px 5%;}
+  .gallery-header{text-align:center;margin-bottom:44px;}
+  .gallery-header .section-sub{margin:0 auto;}
+  .gallery-controls{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:36px;}
+  .g-btn{padding:10px 22px;border-radius:30px;border:2px solid var(--deep-green);background:transparent;color:var(--deep-green);font-weight:600;font-size:13.5px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:7px;}
+  .g-btn:hover,.g-btn.active{background:var(--deep-green);color:white;}
+  .g-btn.add{border-color:var(--saffron);color:var(--saffron);}
+  .g-btn.add:hover{background:var(--saffron);color:white;}
+  #galPhotoIn,#galVideoIn{display:none;}
+  .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:20px;max-width:1200px;margin:0 auto;}
+  .media-item{border-radius:16px;overflow:hidden;aspect-ratio:4/3;background:var(--cream);position:relative;cursor:pointer;border:1px solid #E8E2D8;transition:transform 0.3s,box-shadow 0.3s;}
+  .media-item:hover{transform:translateY(-5px);box-shadow:0 16px 40px rgba(14,77,58,0.15);}
+  .media-item img,.media-item video{width:100%;height:100%;object-fit:cover;display:block;}
+  .media-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.6);color:white;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;}
+  .del-btn{position:absolute;top:8px;right:8px;background:rgba(210,40,40,0.85);color:white;border:none;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer;display:none;align-items:center;justify-content:center;}
+  .media-item:hover .del-btn{display:flex;}
+  .del-btn:hover{background:rgba(180,20,20,1);}
+  .gallery-empty{grid-column:1/-1;text-align:center;padding:70px 20px;color:var(--text-muted);}
+  .gallery-empty .icon{font-size:56px;margin-bottom:16px;}
+  .gallery-empty p{font-size:15px;line-height:1.7;}
+  .media-count{text-align:center;margin-top:18px;font-size:13px;color:var(--text-muted);}
+
+  /* LIGHTBOX */
+  .lightbox{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.93);align-items:center;justify-content:center;}
+  .lightbox.open{display:flex;}
+  .lb-inner{position:relative;max-width:92vw;max-height:92vh;display:flex;align-items:center;justify-content:center;}
+  .lb-inner img,.lb-inner video{max-width:88vw;max-height:82vh;border-radius:12px;display:block;object-fit:contain;}
+  .lb-close{position:absolute;top:-44px;right:0;background:none;border:none;color:white;font-size:34px;cursor:pointer;line-height:1;}
+  .lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:white;font-size:24px;padding:12px 16px;border-radius:10px;cursor:pointer;transition:background 0.2s;z-index:10;}
+  .lb-nav:hover{background:rgba(255,255,255,0.3);}
+  .lb-prev{left:-60px;}.lb-next{right:-60px;}
+  .lb-caption{position:absolute;bottom:-36px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.6);font-size:13px;white-space:nowrap;}
+
+  /* THERAPIES */
+  .therapies-section{padding:90px 5%;background:var(--cream);}
+  .therapies-header{text-align:center;margin-bottom:52px;}
+  .therapies-header .section-sub{margin:0 auto;}
+  .therapies-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;max-width:1200px;margin:0 auto;}
+  .therapy-card{background:white;border-radius:20px;overflow:hidden;border:1px solid #EEE8DD;transition:all 0.3s ease;position:relative;}
+  .therapy-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--saffron),var(--gold));transform:scaleX(0);transform-origin:left;transition:transform 0.3s ease;z-index:2;}
+  .therapy-card:hover{transform:translateY(-6px);box-shadow:0 20px 48px rgba(14,77,58,0.12);border-color:transparent;}
+  .therapy-card:hover::before{transform:scaleX(1);}
+
+  /* Therapy photo upload area */
+  .therapy-photo{
+    width:100%;height:180px;background:linear-gradient(135deg,#e8f5ee,#d4ece0);
+    position:relative;cursor:pointer;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    transition:background 0.3s;
+  }
+  .therapy-photo:hover{background:linear-gradient(135deg,#d4ece0,#b8ddc9);}
+  .therapy-photo img{width:100%;height:100%;object-fit:cover;display:none;}
+  .therapy-photo-hint{
+    text-align:center;color:var(--mid-green);font-size:12px;font-weight:500;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    pointer-events:none;transition:opacity 0.2s;
+  }
+  .therapy-photo-hint svg{opacity:0.5;}
+  .therapy-photo:hover .therapy-photo-hint{opacity:0.7;}
+  .therapy-photo.has-img .therapy-photo-hint{display:none;}
+  .tp-change-btn{
+    position:absolute;bottom:8px;right:8px;
+    background:rgba(14,77,58,0.82);color:white;border:none;
+    padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;
+    cursor:pointer;display:none;transition:background 0.2s;
+  }
+  .therapy-photo:hover .tp-change-btn{display:block;}
+  .tp-change-btn:hover{background:var(--saffron);}
+  .therapy-input{display:none;}
+
+  .therapy-body{padding:24px 26px 26px;}
+  .therapy-icon{width:50px;height:50px;border-radius:14px;background:var(--saffron-glow);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px;transition:background 0.3s;}
+  .therapy-card:hover .therapy-icon{background:var(--saffron);}
+  .therapy-card h3{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--deep-green);margin-bottom:8px;font-weight:700;}
+  .therapy-card p{font-size:13.5px;color:var(--text-muted);line-height:1.7;}
+  .therapy-tag{display:inline-block;margin-top:14px;background:var(--cream);color:var(--mid-green);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;}
+
+  /* PROCESS */
+  .process-section{background:var(--deep-green);padding:90px 5%;}
+  .process-inner{max-width:1200px;margin:0 auto;}
+  .process-section .section-title{color:white;}
+  .process-section .section-tag{color:var(--saffron-light);}
+  .process-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;margin-top:50px;position:relative;}
+  .process-steps::before{content:'';position:absolute;top:30px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--saffron),transparent);z-index:0;}
+  .step-card{background:rgba(255,255,255,0.07);border-radius:20px;padding:28px 22px;border:1px solid rgba(255,255,255,0.1);text-align:center;position:relative;z-index:1;transition:background 0.3s;}
+  .step-card:hover{background:rgba(255,255,255,0.12);}
+  .step-num{width:52px;height:52px;border-radius:50%;background:var(--saffron);color:white;font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;}
+  .step-card h4{color:white;font-size:16px;font-weight:600;margin-bottom:10px;}
+  .step-card p{color:rgba(255,255,255,0.6);font-size:13.5px;line-height:1.6;}
+
+  /* CONTACT */
+  .contact-section{padding:90px 5%;}
+  .contact-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;}
+  .info-card{display:flex;gap:18px;align-items:flex-start;background:var(--cream);padding:22px;border-radius:16px;margin-bottom:16px;border:1px solid #EEE8DD;}
+  .info-icon{width:46px;height:46px;border-radius:12px;background:var(--saffron-glow);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;}
+  .info-text strong{display:block;font-weight:600;color:var(--deep-green);margin-bottom:4px;font-size:15px;}
+  .info-text span{font-size:14px;color:var(--text-muted);line-height:1.6;}
+  .info-text a{color:var(--saffron);text-decoration:none;font-weight:600;}
+  .contact-form{background:white;padding:40px;border-radius:24px;border:1px solid #EEE8DD;}
+  .contact-form h3{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--deep-green);margin-bottom:24px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .form-group{margin-bottom:18px;}
+  .form-group label{display:block;font-size:13px;font-weight:600;color:var(--charcoal);margin-bottom:7px;}
+  .form-group input,.form-group textarea,.form-group select{width:100%;padding:12px 16px;border:1.5px solid #E5E0D6;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--charcoal);background:var(--warm-white);transition:border-color 0.2s;outline:none;}
+  .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--saffron);}
+  .form-group textarea{min-height:110px;resize:vertical;}
+  .submit-btn{width:100%;background:linear-gradient(135deg,var(--deep-green),var(--mid-green));color:white;border:none;padding:15px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity 0.2s,transform 0.15s;}
+  .submit-btn:hover{opacity:0.9;transform:translateY(-1px);}
+  .success-msg{display:none;text-align:center;color:var(--mid-green);font-weight:600;padding:12px;font-size:15px;}
+
+  .map-strip{background:var(--deep-green);padding:16px 5%;text-align:center;}
+  .map-strip a{color:var(--saffron-light);font-size:14px;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:8px;}
+  .map-strip a:hover{color:white;}
+
+  /* FOOTER */
+  footer{background:var(--charcoal);color:rgba(255,255,255,0.7);padding:50px 5% 30px;}
+  .footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;max-width:1200px;margin:0 auto;padding-bottom:40px;border-bottom:1px solid rgba(255,255,255,0.08);}
+  .footer-brand strong{display:block;font-family:'Cormorant Garamond',serif;font-size:22px;color:white;margin-bottom:6px;}
+  .footer-brand p{font-size:13.5px;line-height:1.7;max-width:260px;}
+  footer h5{color:white;font-size:14px;margin-bottom:16px;}
+  footer ul{list-style:none;}
+  footer ul li{margin-bottom:9px;}
+  footer ul a{color:rgba(255,255,255,0.6);text-decoration:none;font-size:13.5px;transition:color 0.2s;}
+  footer ul a:hover{color:var(--saffron-light);}
+  .footer-bottom{max-width:1200px;margin:28px auto 0;display:flex;justify-content:space-between;align-items:center;}
+  .footer-bottom p{font-size:13px;}
+  .saffron-dot{color:var(--saffron);}
+
+  /* WA FLOAT */
+  .wa-float{position:fixed;bottom:28px;right:28px;z-index:900;width:56px;height:56px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(37,211,102,0.45);text-decoration:none;transition:transform 0.2s;}
+  .wa-float:hover{transform:scale(1.1);}
+  .wa-float svg{width:28px;height:28px;fill:white;}
+
+  /* RESPONSIVE */
+  @media(max-width:900px){
+    .hero-content{grid-template-columns:1fr;text-align:center;}
+    .hero-content>div>p{margin:0 auto 36px;}
+    .hero-btns{justify-content:center;}
+    .hero-visual{display:none;}
+    .about-inner{grid-template-columns:1fr;}
+    .process-steps{grid-template-columns:1fr 1fr;}
+    .contact-inner{grid-template-columns:1fr;}
+    .footer-top{grid-template-columns:1fr 1fr;}
+    .nav-links{display:none;}
+    .lb-prev{left:-36px;}.lb-next{right:-36px;}
+  }
+  @media(max-width:600px){
+    .process-steps{grid-template-columns:1fr;}
+    .footer-top{grid-template-columns:1fr;}
+    .form-row{grid-template-columns:1fr;}
+    .lb-prev{left:4px;}.lb-next{right:4px;}
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+  .fade-up{opacity:0;animation:fadeUp 0.6s ease forwards;}
+  .d1{animation-delay:0.1s;}.d2{animation-delay:0.25s;}.d3{animation-delay:0.4s;}.d4{animation-delay:0.55s;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="document.getElementById('logoInput').click()" title="Click to change logo">
+    <div class="logo-img-wrap">
+      <img id="logoImg" src="" alt="Logo">
+      <span class="logo-default-icon" id="logoDef">🏥</span>
+      <div class="logo-change-overlay">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+        Change Logo
+      </div>
+    </div>
+    <div class="nav-logo-text">
+      <strong>Shree Ganpati Health Center</strong>
+      <span>Physiotherapy & Wellness</span>
+    </div>
+    <div class="logo-tooltip">📷 Click to change logo image</div>
+  </div>
+  <input type="file" id="logoInput" accept="image/*" onchange="changeLogo(this)">
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#therapies">Therapies</a></li>
+    <li><a href="#process">How It Works</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="tel:09899161526" class="nav-cta">📞 Call Now</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-pattern"></div>
+  <div class="hero-content">
+    <div>
+      <div class="hero-badge fade-up"><span>✦ Trusted Healing Since Years</span></div>
+      <h1 class="fade-up d1">Restore Your Body,<br><em>Reclaim Your Life.</em></h1>
+      <p class="fade-up d2">Shree Ganpati Health Center offers expert physiotherapy and holistic therapies in Uttam Nagar, Delhi — guided by experienced specialists committed to your recovery and wellbeing.</p>
+      <div class="hero-btns fade-up d3">
+        <a href="#contact" class="btn-primary">Book Appointment</a>
+        <a href="#therapies" class="btn-ghost">Our Therapies</a>
+      </div>
+    </div>
+    <div class="hero-visual fade-up d4">
+      <div style="position:relative;">
+        <div class="upload-ring"></div>
+        <div class="upload-circle" id="heroCircle" onclick="document.getElementById('heroMediaInput').click()">
+          <img id="heroImg" src="" alt="Clinic">
+          <video id="heroVid" autoplay muted loop playsinline></video>
+          <div class="upload-placeholder" id="heroPlaceholder">
+            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+            <strong>Upload Photo or Video</strong>
+            <p>Tap to add your clinic or doctor image / video</p>
+          </div>
+        </div>
+        <input type="file" id="heroMediaInput" accept="image/*,video/*" onchange="loadHeroMedia(this)">
+        <div class="hero-stats">
+          <div class="stat-box"><strong>5000+</strong><span>Patients Treated</span></div>
+          <div class="stat-box"><strong>15+</strong><span>Therapies</span></div>
+          <div class="stat-box"><strong>100%</strong><span>Dedicated Care</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<div id="about" class="about-wrap">
+  <div class="about-inner">
+    <div class="about-img-block">
+      <div class="about-img-holder" onclick="document.getElementById('aboutMediaInput').click()" title="Upload photo or video">
+        <img id="aboutImg" src="" alt="About">
+        <video id="aboutVid" autoplay muted loop playsinline></video>
+        <div class="about-upload-hint" id="aboutHint">
+          <svg width="36" height="36" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" viewBox="0 0 24 24"><path d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 18.75h16.5M3.75 5.25h16.5a1.5 1.5 0 011.5 1.5v12a1.5 1.5 0 01-1.5 1.5H3.75a1.5 1.5 0 01-1.5-1.5v-12a1.5 1.5 0 011.5-1.5z"/></svg>
+          Click to upload photo or video
+        </div>
+      </div>
+      <input type="file" id="aboutMediaInput" accept="image/*,video/*" onchange="loadAboutMedia(this)">
+      <div class="about-badge-float"><strong>10+</strong><span>Years of<br>Excellence</span></div>
+    </div>
+    <div class="about-text">
+      <span class="section-tag">✦ About Us</span>
+      <h2 class="section-title">Your Neighbourhood<br>Health Partner</h2>
+      <p>At <strong>Shree Ganpati Health Center</strong>, we believe that healing begins with the right care, delivered with compassion. Our clinic in Uttam Nagar, Delhi provides a wide range of physiotherapy and wellness treatments designed to restore mobility, relieve pain, and improve quality of life.</p>
+      <p>Our experienced team uses modern techniques combined with time-tested therapies to deliver personalised treatment plans for every patient — from children to seniors.</p>
+      <div class="about-highlights">
+        <div class="highlight-item"><span class="ico">🏥</span><span>State-of-the-art Equipment</span></div>
+        <div class="highlight-item"><span class="ico">👨‍⚕️</span><span>Experienced Specialists</span></div>
+        <div class="highlight-item"><span class="ico">💊</span><span>Personalised Care Plans</span></div>
+        <div class="highlight-item"><span class="ico">🕐</span><span>Flexible Appointment Times</span></div>
+        <div class="highlight-item"><span class="ico">🌿</span><span>Holistic Healing Approach</span></div>
+        <div class="highlight-item"><span class="ico">❤️</span><span>Compassionate Team</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<div id="gallery" class="gallery-section">
+  <div class="gallery-header">
+    <span class="section-tag">✦ Gallery</span>
+    <h2 class="section-title">Our Clinic & Team</h2>
+    <p class="section-sub">Upload unlimited photos and videos of your clinic, team, treatments, and facilities to showcase your work.</p>
+  </div>
+  <div class="gallery-controls">
+    <button class="g-btn active" onclick="filterMedia('all',this)">🖼️ All</button>
+    <button class="g-btn" onclick="filterMedia('photo',this)">📷 Photos</button>
+    <button class="g-btn" onclick="filterMedia('video',this)">🎥 Videos</button>
+    <button class="g-btn add" onclick="document.getElementById('galPhotoIn').click()">＋ Add Photos</button>
+    <button class="g-btn add" onclick="document.getElementById('galVideoIn').click()">＋ Add Videos</button>
+  </div>
+  <input type="file" id="galPhotoIn" accept="image/*" multiple onchange="addMedia(this,'photo')">
+  <input type="file" id="galVideoIn" accept="video/*" multiple onchange="addMedia(this,'video')">
+  <div class="media-grid" id="mediaGrid">
+    <div class="gallery-empty">
+      <div class="icon">📸</div>
+      <p>No media yet.<br>Click <strong>"＋ Add Photos"</strong> or <strong>"＋ Add Videos"</strong> to start uploading!</p>
+    </div>
+  </div>
+  <p class="media-count" id="mediaCount"></p>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lb" onclick="lbClose(event)">
+  <div class="lb-inner" id="lbInner">
+    <button class="lb-close" onclick="lbCloseBtn()">✕</button>
+    <button class="lb-nav lb-prev" onclick="lbNav(-1,event)">‹</button>
+    <button class="lb-nav lb-next" onclick="lbNav(1,event)">›</button>
+    <div class="lb-caption" id="lbCaption"></div>
+  </div>
+</div>
+
+<!-- THERAPIES -->
+<div id="therapies" class="therapies-section">
+  <div class="therapies-header">
+    <span class="section-tag">✦ Our Services</span>
+    <h2 class="section-title">Therapies We Offer</h2>
+    <p class="section-sub">We provide a comprehensive range of evidence-based treatments to address pain, improve function, and support overall wellness.</p>
+  </div>
+  <div class="therapies-grid" id="therapiesGrid">
+
+    <!-- 1 -->
+    <div class="therapy-card">
+      <div class="therapy-photo" id="tp0" onclick="triggerTP(0)">
+        <img id="tpImg0" src="" alt="">
+        <div class="therapy-photo-hint"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>Add Photo</div>
+        <button class="tp-change-btn" onclick="event.stopPropagation();triggerTP(0)">📷 Change</button>
+      </div>
+      <input type="file" class="therapy-input" id="tpIn0" accept="image/*" onchange="loadTP(this,0)">
+      <div class="therapy-body"><div class="therapy-icon">⚡</div><h3>Electrotherapy</h3><p>Advanced electrical stimulation including TENS, IFT, and ultrasound therapy for pain relief and tissue healing.</p><span class="therapy-tag">Pain Management</span></div>
+    </div>
+
+    <!-- 2 -->
+    <div class="therapy-card">
+      <div class="therapy-photo" id="tp1" onclick="triggerTP(1)">
+        <img id="tpImg1" src="" alt="">
+        <div class="therapy-photo-hint"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>Add Photo</div>
+        <button class="tp-change-btn" onclick="event.stopPropagation();triggerTP(1)">📷 Change</button>
+      </div>
+      <input type="file" class="therapy-input" id="tpIn1" accept="image/*" onchange="loadTP(this,1)">
+      <div class="therapy-body"><div class="therapy-icon">💆</div><h3>Manual Therapy</h3><p>Hands-on mobilisation and manipulation of joints and soft tissues to restore movement and reduce stiffness.</p><span class="therapy-tag">Mobility</span></div>
+    </div>
+
+    <!-- 3 -->
+    <div class="therapy-card">
+      <div class="therapy-photo" id="tp2" onclick="triggerTP(2)">
+        <img id="tpImg2" src="" alt="">
+        <div class="therapy-photo-hint"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>Add Photo</div>
+        <button class="tp-change-btn" onclick="event.stopPropagation();triggerTP(2)">📷 Change</button>
+      </div>
+      <input type="file" class="therapy-input" id="tpIn2" accept="image/*" onchange="loadTP(this,2)">
+      <div class="therapy-body"><div class="therapy-icon">🦴</div><h3>Orthopaedic Rehab</h3><p>Targeted rehabilitation for post-surgical recovery, fractures, arthritis, and musculoskeletal conditions.</p><span class="therapy-tag">Rehabilitation</span></div>
+    </div>
+
+    <!-- 4 -->
+    <div class="therapy-card">
+      <div class="therapy-photo" id="tp3" onclick="triggerTP(3)">
+        <img id="tpImg3" src="" alt="">
+        <div class="therapy-photo-hint"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>Add Photo</div>
+        <button class="tp-change-btn" onclick="event.stopPropagation();triggerTP(3)">📷 Change</button>
+      </div>
+      <input type="file" class="therapy-input" id="tpIn3" accept="image/*" onchange="loadTP(this,3)">
+      <div class="therapy-body"><div class="therapy-icon">🧠</div><h3>Neurological Physiotherapy</h3><p>Specialised therapy for stroke, Parkinson's, cerebral palsy, and other neurological conditions.</p><span class="therapy-tag">Neurology</span></div>
+    </div>
+
+    <!-- 5 -->
+    <div class="therapy-card">
+      <div class="therapy-photo" id="tp4" onclick="triggerTP(4)">
+        <img id="tpImg4" src="" alt="">
+        <div class="therapy-photo-hint"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>Add Photo</div>
+        <button class="tp-change-btn" onclick="event.stopPropagation();triggerTP(4)">📷 Change</button>
+      </div>
+      <input type="file" class="therapy-input" id="tpIn4" accept="image/*" onchange="loadTP(this,4)">
+      <div class="therapy-body"><div class="therapy-icon">🤰</div><h3>Women's Health Therapy</h3><p>Pre and post-natal physiotherapy, pelvic floor rehabilitation, and specialised women's care.</p><span class="therapy-tag">Women's Health</span></div>
+    </div>
+
+    <!-- 6 -->
+    <div class="therapy-card">
+      <div class="therapy-photo" id="tp5" onclick="triggerTP(5)">
+        <img id="tpImg5" src="" alt="">
+        <div class="therapy-photo-hint"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>Add Photo</div>
+        <button class="tp-change-btn" onclick="event.stopPropagation();triggerTP(5)">📷 Change</button>
+      </div>
+      <input type="file" class="therapy-input" id="tpIn5" accept="image/*" onchange="loadTP(this,5)">
+      <div class="therapy-body"><div class="therapy-icon">🏃</div><h3>Sports Injury Treatment</h3><p>Rapid recovery for sprains, strains, ligament tears, and sports performance restoration.</p><span class="therapy-tag">Sports Medicine</span></div>
+    </div>
+
+    <!-- 7 -->
+    <div class="therapy-card">
+      <div class="therapy-photo" id="tp6" onclick="triggerTP(6)">
+        <img id="tpImg6" src="" alt="">
+        <div class="therapy-photo-hint"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>Add Photo</div>
+        <button class="tp-change-btn" onclick="event.stopPropagation();triggerTP(6)">📷 Change</button>
+      </div>
+      <input type="file" class="therapy-input" id="tpIn6" accept="image/*" onchange="loadTP(this,6)">
+      <div class="therapy-body"><div class="therapy-icon">🌊</div><h3>Hydrotherapy</h3><p>Water-based therapeutic exercises to reduce joint stress and improve movement in a safe environment.</p><span class="therapy-tag">Aquatic Therapy</span></div>
+    </div>
+
+    <!-- 8 -->
+    <div class="therapy-card">
+      <div class="therapy-photo" id="tp7" onclick="triggerTP(7)">
+        <img id="tpImg7" src="" alt="">
+        <div class="therapy-photo-hint"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>Add Photo</div>
+        <button class="tp-change-btn" onclick="event.stopPropagation();triggerTP(7)">📷 Change</button>
+      </div>
+      <input type="file" class="therapy-input" id="tpIn7" accept="image/*" onchange="loadTP(this,7)">
+      <div class="therapy-body"><div class="therapy-icon">🔥</div><h3>Dry Needling & Cupping</h3><p>Trigger-point techniques to release muscle tension and promote deep tissue healing.</p><span class="therapy-tag">Traditional Therapy</span></div>
+    </div>
+
+    <!-- 9 -->
+    <div class="therapy-card">
+      <div class="therapy-photo" id="tp8" onclick="triggerTP(8)">
+        <img id="tpImg8" src="" alt="">
+        <div class="therapy-photo-hint"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>Add Photo</div>
+        <button class="tp-change-btn" onclick="event.stopPropagation();triggerTP(8)">📷 Change</button>
+      </div>
+      <input type="file" class="therapy-input" id="tpIn8" accept="image/*" onchange="loadTP(this,8)">
+      <div class="therapy-body"><div class="therapy-icon">👶</div><h3>Paediatric Physiotherapy</h3><p>Gentle, child-friendly therapy for developmental delays, postural issues, and childhood conditions.</p><span class="therapy-tag">Paediatric</span></div>
+    </div>
+
+    <!-- 10 -->
+    <div class="therapy-card">
+      <div class="therapy-photo" id="tp9" onclick="triggerTP(9)">
+        <img id="tpImg9" src="" alt="">
+        <div class="therapy-photo-hint"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>Add Photo</div>
+        <button class="tp-change-btn" onclick="event.stopPropagation();triggerTP(9)">📷 Change</button>
+      </div>
+      <input type="file" class="therapy-input" id="tpIn9" accept="image/*" onchange="loadTP(this,9)">
+      <div class="therapy-body"><div class="therapy-icon">🧘</div><h3>Yoga Therapy</h3><p>Medically supervised yoga sessions for recovery, flexibility, and mental wellbeing.</p><span class="therapy-tag">Wellness</span></div>
+    </div>
+
+    <!-- 11 -->
+    <div class="therapy-card">
+      <div class="therapy-photo" id="tp10" onclick="triggerTP(10)">
+        <img id="tpImg10" src="" alt="">
+        <div class="therapy-photo-hint"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>Add Photo</div>
+        <button class="tp-change-btn" onclick="event.stopPropagation();triggerTP(10)">📷 Change</button>
+      </div>
+      <input type="file" class="therapy-input" id="tpIn10" accept="image/*" onchange="loadTP(this,10)">
+      <div class="therapy-body"><div class="therapy-icon">💨</div><h3>Chest Physiotherapy</h3><p>Respiratory rehabilitation for COPD, asthma, and post-COVID recovery to improve breathing.</p><span class="therapy-tag">Respiratory</span></div>
+    </div>
+
+    <!-- 12 -->
+    <div class="therapy-card">
+      <div class="therapy-photo" id="tp11" onclick="triggerTP(11)">
+        <img id="tpImg11" src="" alt="">
+        <div class="therapy-photo-hint"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>Add Photo</div>
+        <button class="tp-change-btn" onclick="event.stopPropagation();triggerTP(11)">📷 Change</button>
+      </div>
+      <input type="file" class="therapy-input" id="tpIn11" accept="image/*" onchange="loadTP(this,11)">
+      <div class="therapy-body"><div class="therapy-icon">🦯</div><h3>Geriatric Physiotherapy</h3><p>Compassionate elderly care addressing falls prevention, joint pain, and age-related conditions.</p><span class="therapy-tag">Senior Care</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PROCESS -->
+<div id="process" class="process-section">
+  <div class="process-inner">
+    <span class="section-tag">✦ How It Works</span>
+    <h2 class="section-title">Your Path to Recovery</h2>
+    <div class="process-steps">
+      <div class="step-card"><div class="step-num">1</div><h4>Book Appointment</h4><p>Call us or fill the online form to schedule at a time convenient for you.</p></div>
+      <div class="step-card"><div class="step-num">2</div><h4>Initial Assessment</h4><p>Our specialist conducts a thorough evaluation of your condition, history, and goals.</p></div>
+      <div class="step-card"><div class="step-num">3</div><h4>Personalised Plan</h4><p>A custom treatment plan designed specifically for your condition and recovery timeline.</p></div>
+      <div class="step-card"><div class="step-num">4</div><h4>Heal & Recover</h4><p>Begin therapy sessions, track progress, and reclaim your health and mobility.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div id="contact" class="contact-section">
+  <div class="contact-inner">
+    <div class="contact-info">
+      <span class="section-tag">✦ Get In Touch</span>
+      <h2 class="section-title">Visit Us Today</h2>
+      <div class="info-card"><div class="info-icon">📍</div><div class="info-text"><strong>Our Address</strong><span>WZ-3B, Phase 4, Om Vihar,<br>Uttam Nagar, Delhi – 110059</span></div></div>
+      <div class="info-card"><div class="info-icon">📞</div><div class="info-text"><strong>Call Us</strong><a href="tel:09899161526">098991 61526</a></div></div>
+      <div class="info-card"><div class="info-icon">🕐</div><div class="info-text"><strong>Clinic Hours</strong><span>Mon – Sat: 9:00 AM – 8:00 PM<br>Sunday: 10:00 AM – 2:00 PM</span></div></div>
+      <div class="info-card"><div class="info-icon">🏥</div><div class="info-text"><strong>Speciality</strong><span>Physiotherapy, Rehabilitation<br>& Holistic Wellness Therapies</span></div></div>
+    </div>
+    <div class="contact-form">
+      <h3>Book an Appointment</h3>
+      <div class="form-row">
+        <div class="form-group"><label>Your Name *</label><input type="text" id="fname" placeholder="Full Name"></div>
+        <div class="form-group"><label>Phone Number *</label><input type="tel" id="fphone" placeholder="+91 XXXXX XXXXX"></div>
+      </div>
+      <div class="form-group"><label>Email Address</label><input type="email" id="femail" placeholder="you@example.com"></div>
+      <div class="form-group">
+        <label>Select Therapy</label>
+        <select id="ftherapy">
+          <option value="">-- Choose Therapy --</option>
+          <option>Electrotherapy</option><option>Manual Therapy</option>
+          <option>Orthopaedic Rehabilitation</option><option>Neurological Physiotherapy</option>
+          <option>Sports Injury Treatment</option><option>Women's Health Therapy</option>
+          <option>Paediatric Physiotherapy</option><option>Geriatric Physiotherapy</option>
+          <option>Yoga Therapy</option><option>Chest Physiotherapy</option>
+          <option>Dry Needling & Cupping</option><option>Other / Not Sure</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Message / Describe Your Condition</label><textarea id="fmsg" placeholder="Tell us about your symptoms or concerns..."></textarea></div>
+      <button class="submit-btn" onclick="submitForm()">Send Appointment Request →</button>
+      <p class="success-msg" id="successMsg">✅ Thank you! We'll call you back shortly to confirm your appointment.</p>
+    </div>
+  </div>
+</div>
+
+<div class="map-strip">
+  <a href="https://maps.google.com/?q=WZ-3B+Phase+4+Om+Vihar+Uttam+Nagar+Delhi+110059" target="_blank">
+    🗺️ Open in Google Maps — WZ-3B, Phase 4, Om Vihar, Uttam Nagar, Delhi 110059
+  </a>
+</div>
+
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand"><strong>Shree Ganpati Health Center</strong><p>Dedicated to restoring health and enhancing quality of life through expert physiotherapy and holistic care in Uttam Nagar, Delhi.</p></div>
+    <div><h5>Quick Links</h5><ul><li><a href="#about">About Us</a></li><li><a href="#gallery">Gallery</a></li><li><a href="#therapies">Our Therapies</a></li><li><a href="#process">How It Works</a></li><li><a href="#contact">Contact</a></li></ul></div>
+    <div><h5>Therapies</h5><ul><li><a href="#therapies">Electrotherapy</a></li><li><a href="#therapies">Manual Therapy</a></li><li><a href="#therapies">Sports Injury</a></li><li><a href="#therapies">Neurological</a></li><li><a href="#therapies">Yoga Therapy</a></li></ul></div>
+    <div><h5>Contact</h5><ul><li><a href="tel:09899161526">📞 098991 61526</a></li><li><a href="#">📍 Uttam Nagar, Delhi</a></li><li><a href="#">🕐 Mon–Sat: 9AM–8PM</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Shree Ganpati Health Center<span class="saffron-dot"> ✦</span> All Rights Reserved.</p>
+    <p style="font-size:12px;">WZ-3B, Phase 4, Om Vihar, Uttam Nagar, Delhi 110059</p>
+  </div>
+</footer>
+
+<a class="wa-float" href="https://wa.me/919899161526" target="_blank" title="Chat on WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<script>
+/* ── LOGO ── */
+function changeLogo(inp){
+  if(!inp.files[0])return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const img=document.getElementById('logoImg');
+    img.src=e.target.result; img.style.display='block';
+    document.getElementById('logoDef').style.display='none';
+  };
+  r.readAsDataURL(inp.files[0]);
+}
+
+/* ── HERO MEDIA ── */
+function loadHeroMedia(inp){
+  if(!inp.files[0])return;
+  const f=inp.files[0],r=new FileReader();
+  r.onload=e=>{
+    document.getElementById('heroPlaceholder').style.display='none';
+    if(f.type.startsWith('video/')){
+      const v=document.getElementById('heroVid');
+      v.src=e.target.result; v.style.display='block';
+      document.getElementById('heroImg').style.display='none';
+    } else {
+      const img=document.getElementById('heroImg');
+      img.src=e.target.result; img.style.display='block';
+      document.getElementById('heroVid').style.display='none';
+    }
+  };
+  r.readAsDataURL(f);
+}
+
+/* ── ABOUT MEDIA ── */
+function loadAboutMedia(inp){
+  if(!inp.files[0])return;
+  const f=inp.files[0],r=new FileReader();
+  r.onload=e=>{
+    document.getElementById('aboutHint').style.display='none';
+    if(f.type.startsWith('video/')){
+      const v=document.getElementById('aboutVid');
+      v.src=e.target.result; v.style.display='block';
+      document.getElementById('aboutImg').style.display='none';
+    } else {
+      const img=document.getElementById('aboutImg');
+      img.src=e.target.result; img.style.display='block';
+      document.getElementById('aboutVid').style.display='none';
+    }
+  };
+  r.readAsDataURL(f);
+}
+
+/* ── GALLERY ── */
+let items=[], activeFilter='all', lbIdx=0;
+
+function addMedia(inp,type){
+  Array.from(inp.files).forEach(f=>{
+    const r=new FileReader();
+    r.onload=e=>{ items.push({src:e.target.result,type,name:f.name}); renderGallery(); };
+    r.readAsDataURL(f);
+  });
+  inp.value='';
+}
+
+function renderGallery(){
+  const grid=document.getElementById('mediaGrid');
+  const filtered=items.filter(i=>activeFilter==='all'||i.type===activeFilter);
+  const count=document.getElementById('mediaCount');
+  const photos=items.filter(i=>i.type==='photo').length;
+  const videos=items.filter(i=>i.type==='video').length;
+  count.textContent=items.length>0?`${photos} photo${photos!==1?'s':''} · ${videos} video${videos!==1?'s':''} uploaded`:'';
+
+  if(filtered.length===0){
+    grid.innerHTML=`<div class="gallery-empty"><div class="icon">📸</div><p>No media yet.<br>Click <strong>"＋ Add Photos"</strong> or <strong>"＋ Add Videos"</strong> to start uploading!</p></div>`;
+    return;
+  }
+  grid.innerHTML=filtered.map(item=>{
+    const ri=items.indexOf(item);
+    if(item.type==='photo'){
+      return `<div class="media-item" data-type="photo">
+        <img src="${item.src}" alt="${item.name}" loading="lazy" onclick="lbOpen(${ri})">
+        <span class="media-badge">📷 Photo</span>
+        <button class="del-btn" onclick="delMedia(event,${ri})">✕</button>
+      </div>`;
+    } else {
+      return `<div class="media-item" data-type="video">
+        <video src="${item.src}" muted loop playsinline onclick="lbOpen(${ri})" onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+        <span class="media-badge">🎥 Video</span>
+        <button class="del-btn" onclick="delMedia(event,${ri})">✕</button>
+      </div>`;
+    }
+  }).join('');
+}
+
+function delMedia(e,ri){
+  e.stopPropagation();
+  if(confirm('Remove this media?')){ items.splice(ri,1); renderGallery(); }
+}
+
+function filterMedia(f,btn){
+  activeFilter=f;
+  document.querySelectorAll('.g-btn:not(.add)').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGallery();
+}
+
+/* ── LIGHTBOX ── */
+function lbOpen(idx){
+  lbIdx=idx; lbShow();
+  document.getElementById('lb').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function lbShow(){
+  const item=items[lbIdx];
+  const inner=document.getElementById('lbInner');
+  inner.querySelectorAll('img,video').forEach(el=>el.remove());
+  if(item.type==='photo'){
+    const img=document.createElement('img');
+    img.src=item.src; inner.appendChild(img);
+  } else {
+    const v=document.createElement('video');
+    v.src=item.src; v.controls=true; v.autoplay=true; inner.appendChild(v);
+  }
+  document.getElementById('lbCaption').textContent=`${lbIdx+1} / ${items.length}  ·  ${item.name||''}`;
+}
+function lbNav(dir,e){
+  if(e)e.stopPropagation();
+  inner.querySelectorAll&&inner.querySelectorAll('video').forEach(v=>v.pause());
+  lbIdx=(lbIdx+dir+items.length)%items.length; lbShow();
+}
+function lbClose(e){
+  if(e.target===document.getElementById('lb')) lbCloseBtn();
+}
+function lbCloseBtn(){
+  document.getElementById('lbInner').querySelectorAll('video').forEach(v=>v.pause());
+  document.getElementById('lb').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('lb').classList.contains('open'))return;
+  if(e.key==='ArrowRight') lbNav(1,null);
+  if(e.key==='ArrowLeft') lbNav(-1,null);
+  if(e.key==='Escape') lbCloseBtn();
+});
+
+/* ── THERAPY PHOTOS ── */
+function triggerTP(idx){ document.getElementById('tpIn'+idx).click(); }
+function loadTP(inp,idx){
+  if(!inp.files[0])return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const img=document.getElementById('tpImg'+idx);
+    img.src=e.target.result; img.style.display='block';
+    document.getElementById('tp'+idx).classList.add('has-img');
+  };
+  r.readAsDataURL(inp.files[0]);
+}
+
+/* ── FORM ── */
+function submitForm(){
+  const n=document.getElementById('fname').value.trim();
+  const p=document.getElementById('fphone').value.trim();
+  if(!n||!p){alert('Please enter your name and phone number.');return;}
+  document.querySelector('.submit-btn').style.display='none';
+  document.getElementById('successMsg').style.display='block';
+}
+
+/* ── SCROLL REVEAL ── */
+const obs=new IntersectionObserver(es=>{
+  es.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}});
+},{threshold:0.1});
+document.querySelectorAll('.therapy-card,.step-card,.info-card').forEach(el=>{
+  el.style.opacity='0'; el.style.transform='translateY(24px)';
+  el.style.transition='opacity 0.5s ease,transform 0.5s ease';
+  obs.observe(el);
+});
+</script>
+</body>
+</html>

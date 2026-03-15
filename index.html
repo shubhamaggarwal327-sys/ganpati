@@ -703,13 +703,250 @@
   ✏️ Owner Mode ON &nbsp;·&nbsp; Click to Logout
 </div>
 
-<script>
-/* ══════════════════════════════════
-   OWNER PASSWORD — change this!
-   ══════════════════════════════════ */
-const OWNER_PASSWORD = 'Ganpati@2025';
+<!-- DEBUG PANEL (only visible in owner mode) -->
+<div id="debugPanel" style="display:none;position:fixed;bottom:180px;right:28px;z-index:901;background:white;border-radius:16px;padding:16px 20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);width:280px;font-family:'DM Sans',sans-serif;font-size:13px;">
+  <div style="font-weight:700;color:#0E4D3A;margin-bottom:10px;">🔧 GitHub Debug</div>
+  <div id="debugLog" style="background:#f5f5f5;border-radius:8px;padding:10px;font-size:11px;line-height:1.7;max-height:160px;overflow-y:auto;color:#333;white-space:pre-wrap;">Press Test to check connection…</div>
+  <button onclick="runDiagnostic()" style="margin-top:10px;width:100%;background:#0E4D3A;color:white;border:none;padding:9px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">🔍 Test GitHub Connection</button>
+</div>
 
-/* ── OWNER AUTH ── */
+<!-- GITHUB UPLOAD SPINNER -->
+<div id="ghSpinner" style="display:none;position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div style="width:52px;height:52px;border:4px solid rgba(255,255,255,0.2);border-top-color:#E8871A;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <p style="color:white;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;letter-spacing:0.3px;"></p>
+  <p style="color:rgba(255,255,255,0.55);font-size:12px;">Saving to GitHub — visible to all visitors once done</p>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════
+   CONFIGURATION — change GH_TOKEN after regenerating
+   ══════════════════════════════════════════════════ */
+const OWNER_PASSWORD  = 'Ganpati@2025';
+const GH_USER         = 'shubhamaggarwal327-sys';
+const GH_REPO         = 'ganpati';
+const GH_TOKEN        = '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';
+const GH_FOLDER       = 'photos';
+/* ══════════════════════════════════════════════════ */
+
+/* ── Auto-detect branch (main or master) ── */
+let GH_BRANCH = 'main';
+let RAW_BASE  = '';
+let API_BASE  = '';
+
+function buildUrls(branch){
+  GH_BRANCH = branch;
+  RAW_BASE  = `https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/${GH_BRANCH}/${GH_FOLDER}/`;
+  API_BASE  = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FOLDER}/`;
+}
+buildUrls('main'); // default, will be corrected by detectBranch()
+
+async function detectBranch(){
+  // Try 'main' first, then 'master'
+  for(const b of ['main','master']){
+    try {
+      const r = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/branches/${b}`,{
+        headers:{ Authorization:`token ${GH_TOKEN}`, Accept:'application/vnd.github.v3+json' }
+      });
+      if(r.ok){ buildUrls(b); debugLog(`✅ Branch detected: ${b}`); return; }
+    } catch(_){}
+  }
+  debugLog('⚠️ Could not detect branch. Using "main".');
+}
+
+/* ── Debug logger ── */
+function debugLog(msg){
+  const el = document.getElementById('debugLog');
+  if(!el) return;
+  const time = new Date().toLocaleTimeString();
+  el.textContent += `[${time}] ${msg}\n`;
+  el.scrollTop = el.scrollHeight;
+  console.log('[GH Debug]', msg);
+}
+
+/* ── Full diagnostic test ── */
+async function runDiagnostic(){
+  const el = document.getElementById('debugLog');
+  el.textContent = '--- Running Diagnostic ---\n';
+
+  // 1. Test repo access
+  debugLog('1. Testing repo access…');
+  try {
+    const r = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}`,{
+      headers:{ Authorization:`token ${GH_TOKEN}`, Accept:'application/vnd.github.v3+json' }
+    });
+    const j = await r.json();
+    if(r.ok){
+      debugLog(`✅ Repo found: ${j.full_name}`);
+      debugLog(`   Visibility: ${j.private?'🔒 PRIVATE':'🌐 Public'}`);
+      debugLog(`   Default branch: ${j.default_branch}`);
+      buildUrls(j.default_branch);
+    } else {
+      debugLog(`❌ Repo error ${r.status}: ${j.message}`);
+      if(r.status===401) debugLog('   → Token is invalid/expired. Regenerate it!');
+      if(r.status===404) debugLog('   → Repo not found. Check username/repo name.');
+      return;
+    }
+  } catch(e){ debugLog('❌ Network error: '+e.message); return; }
+
+  // 2. Test photos folder
+  debugLog('2. Checking photos/ folder…');
+  try {
+    const r = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FOLDER}`,{
+      headers:{ Authorization:`token ${GH_TOKEN}`, Accept:'application/vnd.github.v3+json' }
+    });
+    const j = await r.json();
+    if(r.ok){
+      debugLog(`✅ photos/ folder exists (${Array.isArray(j)?j.length:0} files)`);
+    } else {
+      debugLog(`❌ Folder error ${r.status}: ${j.message}`);
+      if(r.status===404) debugLog('   → Create a "photos" folder in your repo first!');
+      return;
+    }
+  } catch(e){ debugLog('❌ Folder check failed: '+e.message); return; }
+
+  // 3. Test write permission with tiny test file
+  debugLog('3. Testing write permission…');
+  try {
+    const testContent = btoa('test');
+    const testFile = 'photos/test-write.txt';
+    const r = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${testFile}`,{
+      method:'PUT',
+      headers:{
+        Authorization:`token ${GH_TOKEN}`,
+        Accept:'application/vnd.github.v3+json',
+        'Content-Type':'application/json'
+      },
+      body: JSON.stringify({ message:'Test write', content: testContent, branch: GH_BRANCH })
+    });
+    const j = await r.json();
+    if(r.ok || r.status===422){
+      debugLog('✅ Write permission OK!');
+      debugLog('🎉 Everything looks good — uploads should work!');
+    } else {
+      debugLog(`❌ Write failed ${r.status}: ${j.message}`);
+      if(r.status===403) debugLog('   → Token missing "repo" scope. Regenerate with repo access!');
+    }
+  } catch(e){ debugLog('❌ Write test error: '+e.message); }
+}
+
+/* ══════════════════════════════════════════════════
+   GITHUB API HELPER — upload file
+   ══════════════════════════════════════════════════ */
+async function uploadToGitHub(filename, base64Data, mimeType){
+  const pure = base64Data.split(',')[1];
+  const url  = API_BASE + filename;
+  debugLog(`Uploading: ${filename}`);
+
+  // Check if already exists (need SHA to overwrite)
+  let sha;
+  try {
+    const check = await fetch(url,{
+      headers:{ Authorization:`token ${GH_TOKEN}`, Accept:'application/vnd.github.v3+json' }
+    });
+    if(check.ok){ const j=await check.json(); sha=j.sha; debugLog('  File exists — will overwrite'); }
+  } catch(_){}
+
+  const body = { message:`Upload ${filename}`, content: pure, branch: GH_BRANCH };
+  if(sha) body.sha = sha;
+
+  const res = await fetch(url,{
+    method:'PUT',
+    headers:{
+      Authorization:`token ${GH_TOKEN}`,
+      Accept:'application/vnd.github.v3+json',
+      'Content-Type':'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if(!res.ok){
+    const err = await res.json();
+    const msg = `Upload failed [${res.status}]: ${err.message}`;
+    debugLog('❌ ' + msg);
+    // Give user friendly hints
+    if(res.status===401) throw new Error('Token invalid or expired. Please regenerate your GitHub token.');
+    if(res.status===403) throw new Error('Token has no write permission. Regenerate with "repo" scope checked.');
+    if(res.status===404) throw new Error('Repo or photos/ folder not found. Check your settings.');
+    if(res.status===422) throw new Error('Validation error. The branch name may be wrong (try "master" instead of "main").');
+    throw new Error(msg);
+  }
+
+  const rawUrl = RAW_BASE + filename + '?t=' + Date.now();
+  debugLog(`✅ Uploaded: ${rawUrl}`);
+  return rawUrl;
+}
+
+/* Delete a file from GitHub */
+async function deleteFromGitHub(filename){
+  const url = API_BASE + filename;
+  const check = await fetch(url,{
+    headers:{ Authorization:`token ${GH_TOKEN}`, Accept:'application/vnd.github.v3+json' }
+  });
+  if(!check.ok) return;
+  const j = await check.json();
+  await fetch(url,{
+    method:'DELETE',
+    headers:{
+      Authorization:`token ${GH_TOKEN}`,
+      Accept:'application/vnd.github.v3+json',
+      'Content-Type':'application/json'
+    },
+    body: JSON.stringify({ message:`Delete ${filename}`, sha: j.sha, branch: GH_BRANCH })
+  });
+}
+
+/* Read saved state JSON from GitHub */
+async function loadStateFromGitHub(){
+  try {
+    const url = API_BASE + 'site-state.json';
+    const res = await fetch(url+'?t='+Date.now(),{
+      headers:{ Authorization:`token ${GH_TOKEN}`, Accept:'application/vnd.github.v3+json' }
+    });
+    if(!res.ok) return null;
+    const j = await res.json();
+    return JSON.parse(atob(j.content));
+  } catch(_){ return null; }
+}
+
+/* Save state JSON to GitHub */
+async function saveStateToGitHub(state){
+  const url = API_BASE + 'site-state.json';
+  let sha;
+  try {
+    const check = await fetch(url,{
+      headers:{ Authorization:`token ${GH_TOKEN}`, Accept:'application/vnd.github.v3+json' }
+    });
+    if(check.ok){ const j=await check.json(); sha=j.sha; }
+  } catch(_){}
+
+  const body = {
+    message:'Update site state',
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(state)))),
+    branch: GH_BRANCH
+  };
+  if(sha) body.sha = sha;
+
+  await fetch(url,{
+    method:'PUT',
+    headers:{
+      Authorization:`token ${GH_TOKEN}`,
+      Accept:'application/vnd.github.v3+json',
+      'Content-Type':'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+}
+
+/* Show / hide upload spinner overlay */
+function showSpinner(msg='Uploading to GitHub…'){
+  document.getElementById('ghSpinner').querySelector('p').textContent = msg;
+  document.getElementById('ghSpinner').style.display='flex';
+}
+function hideSpinner(){ document.getElementById('ghSpinner').style.display='none'; }
+
+/* ══════════════════════════════════
+   OWNER AUTH
+   ══════════════════════════════════ */
 let ownerMode = false;
 
 function openOwnerModal(){
@@ -727,6 +964,7 @@ function checkOwnerPw(){
     ownerMode=true;
     document.body.classList.add('owner-mode');
     document.getElementById('ownerBadge').classList.add('visible');
+    document.getElementById('debugPanel').style.display='block';
     closeOwnerModal();
   } else {
     document.getElementById('omError').style.display='block';
@@ -739,102 +977,205 @@ function ownerLogout(){
   ownerMode=false;
   document.body.classList.remove('owner-mode');
   document.getElementById('ownerBadge').classList.remove('visible');
+  document.getElementById('debugPanel').style.display='none';
 }
 function requireOwner(){
   if(!ownerMode){ openOwnerModal(); return false; }
   return true;
 }
 
-/* ── LOGO ── */
-function changeLogo(inp){
-  if(!inp.files[0])return;
-  const r=new FileReader();
-  r.onload=e=>{
-    const img=document.getElementById('logoImg');
-    img.src=e.target.result; img.style.display='block';
-    document.getElementById('logoDef').style.display='none';
-  };
-  r.readAsDataURL(inp.files[0]);
-}
-// Intercept logo click — only open file picker if owner
+/* ══════════════════════════════════
+   LOGO — upload to GitHub
+   ══════════════════════════════════ */
 document.querySelector('.nav-logo').addEventListener('click',function(e){
   if(!ownerMode){ e.preventDefault(); e.stopPropagation(); return; }
   document.getElementById('logoInput').click();
 });
 
-/* ── HERO MEDIA ── */
-function loadHeroMedia(inp){
-  if(!inp.files[0])return;
-  const f=inp.files[0],r=new FileReader();
-  r.onload=e=>{
-    document.getElementById('heroPlaceholder').style.display='none';
-    if(f.type.startsWith('video/')){
-      const v=document.getElementById('heroVid');
-      v.src=e.target.result; v.style.display='block';
-      document.getElementById('heroImg').style.display='none';
-    } else {
-      const img=document.getElementById('heroImg');
-      img.src=e.target.result; img.style.display='block';
-      document.getElementById('heroVid').style.display='none';
+async function changeLogo(inp){
+  if(!inp.files[0]) return;
+  const file = inp.files[0];
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      showSpinner('Saving logo to GitHub…');
+      const ext  = file.name.split('.').pop();
+      const fname = 'logo.' + ext;
+      const rawUrl = await uploadToGitHub(fname, e.target.result, file.type);
+
+      // Show immediately
+      const img = document.getElementById('logoImg');
+      img.src = rawUrl; img.style.display='block';
+      document.getElementById('logoDef').style.display='none';
+
+      // Persist state
+      const state = await loadStateFromGitHub() || {};
+      state.logo = rawUrl;
+      await saveStateToGitHub(state);
+      hideSpinner();
+    } catch(err){
+      hideSpinner();
+      alert('Logo upload failed: ' + err.message);
     }
   };
-  r.readAsDataURL(f);
+  reader.readAsDataURL(file);
 }
+
+/* ══════════════════════════════════
+   HERO MEDIA — upload to GitHub
+   ══════════════════════════════════ */
 document.getElementById('heroCircle').addEventListener('click',function(e){
   if(!ownerMode){e.preventDefault();e.stopPropagation();}
   else document.getElementById('heroMediaInput').click();
 });
 
-/* ── ABOUT MEDIA ── */
-function loadAboutMedia(inp){
-  if(!inp.files[0])return;
-  const f=inp.files[0],r=new FileReader();
-  r.onload=e=>{
-    document.getElementById('aboutHint').style.display='none';
-    if(f.type.startsWith('video/')){
-      const v=document.getElementById('aboutVid');
-      v.src=e.target.result; v.style.display='block';
-      document.getElementById('aboutImg').style.display='none';
-    } else {
-      const img=document.getElementById('aboutImg');
-      img.src=e.target.result; img.style.display='block';
-      document.getElementById('aboutVid').style.display='none';
-    }
+async function loadHeroMedia(inp){
+  if(!inp.files[0]) return;
+  const file = inp.files[0];
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      showSpinner('Saving hero image to GitHub…');
+      const ext   = file.name.split('.').pop();
+      const fname = 'hero.' + ext;
+      const rawUrl = await uploadToGitHub(fname, e.target.result, file.type);
+
+      document.getElementById('heroPlaceholder').style.display='none';
+      if(file.type.startsWith('video/')){
+        const v=document.getElementById('heroVid');
+        v.src=rawUrl; v.style.display='block';
+        document.getElementById('heroImg').style.display='none';
+      } else {
+        const img=document.getElementById('heroImg');
+        img.src=rawUrl; img.style.display='block';
+        document.getElementById('heroVid').style.display='none';
+      }
+
+      const state = await loadStateFromGitHub() || {};
+      state.hero = { url: rawUrl, isVideo: file.type.startsWith('video/') };
+      await saveStateToGitHub(state);
+      hideSpinner();
+    } catch(err){ hideSpinner(); alert('Upload failed: '+err.message); }
   };
-  r.readAsDataURL(f);
+  reader.readAsDataURL(file);
 }
+
+/* ══════════════════════════════════
+   ABOUT MEDIA — upload to GitHub
+   ══════════════════════════════════ */
 document.getElementById('aboutMediaInput').previousElementSibling.addEventListener('click',function(e){
   if(!ownerMode){e.preventDefault();e.stopPropagation();}
   else document.getElementById('aboutMediaInput').click();
 },{capture:true});
 
-/* ── GALLERY ── */
+async function loadAboutMedia(inp){
+  if(!inp.files[0]) return;
+  const file = inp.files[0];
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      showSpinner('Saving about image to GitHub…');
+      const ext   = file.name.split('.').pop();
+      const fname = 'about.' + ext;
+      const rawUrl = await uploadToGitHub(fname, e.target.result, file.type);
+
+      document.getElementById('aboutHint').style.display='none';
+      if(file.type.startsWith('video/')){
+        const v=document.getElementById('aboutVid');
+        v.src=rawUrl; v.style.display='block';
+        document.getElementById('aboutImg').style.display='none';
+      } else {
+        const img=document.getElementById('aboutImg');
+        img.src=rawUrl; img.style.display='block';
+        document.getElementById('aboutVid').style.display='none';
+      }
+
+      const state = await loadStateFromGitHub() || {};
+      state.about = { url: rawUrl, isVideo: file.type.startsWith('video/') };
+      await saveStateToGitHub(state);
+      hideSpinner();
+    } catch(err){ hideSpinner(); alert('Upload failed: '+err.message); }
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ══════════════════════════════════
+   THERAPY PHOTOS — upload to GitHub
+   ══════════════════════════════════ */
+function triggerTP(idx){
+  if(!requireOwner()) return;
+  document.getElementById('tpIn'+idx).click();
+}
+
+async function loadTP(inp, idx){
+  if(!inp.files[0]) return;
+  const file = inp.files[0];
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      showSpinner('Saving therapy photo to GitHub…');
+      const ext   = file.name.split('.').pop();
+      const fname = `therapy-${idx}.${ext}`;
+      const rawUrl = await uploadToGitHub(fname, e.target.result, file.type);
+
+      const img = document.getElementById('tpImg'+idx);
+      img.src = rawUrl; img.style.display='block';
+      document.getElementById('tp'+idx).classList.add('has-img');
+
+      const state = await loadStateFromGitHub() || {};
+      if(!state.therapies) state.therapies = {};
+      state.therapies[idx] = rawUrl;
+      await saveStateToGitHub(state);
+      hideSpinner();
+    } catch(err){ hideSpinner(); alert('Upload failed: '+err.message); }
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ══════════════════════════════════
+   GALLERY — upload to GitHub
+   ══════════════════════════════════ */
 let items=[], activeFilter='all', lbIdx=0;
 
-function addMedia(inp,type){
-  if(!requireOwner())return;
-  Array.from(inp.files).forEach(f=>{
-    const r=new FileReader();
-    r.onload=e=>{ items.push({src:e.target.result,type,name:f.name}); renderGallery(); };
-    r.readAsDataURL(f);
-  });
+async function addMedia(inp, type){
+  if(!requireOwner()) return;
+  const files = Array.from(inp.files);
   inp.value='';
+  for(const file of files){
+    try {
+      showSpinner(`Uploading ${file.name} to GitHub…`);
+      const reader = new FileReader();
+      const b64 = await new Promise(res=>{ reader.onload=e=>res(e.target.result); reader.readAsDataURL(file); });
+      const ts    = Date.now();
+      const ext   = file.name.split('.').pop();
+      const fname = `gallery-${ts}-${Math.random().toString(36).slice(2,7)}.${ext}`;
+      const rawUrl = await uploadToGitHub(fname, b64, file.type);
+      items.push({ src: rawUrl, type, name: fname, ghFile: fname });
+      renderGallery();
+
+      const state = await loadStateFromGitHub() || {};
+      if(!state.gallery) state.gallery=[];
+      state.gallery.push({ src: rawUrl, type, name: fname, ghFile: fname });
+      await saveStateToGitHub(state);
+    } catch(err){ alert('Upload failed: '+err.message); }
+  }
+  hideSpinner();
 }
 
 function renderGallery(){
-  const grid=document.getElementById('mediaGrid');
-  const filtered=items.filter(i=>activeFilter==='all'||i.type===activeFilter);
-  const count=document.getElementById('mediaCount');
-  const photos=items.filter(i=>i.type==='photo').length;
-  const videos=items.filter(i=>i.type==='video').length;
-  count.textContent=items.length>0?`${photos} photo${photos!==1?'s':''} · ${videos} video${videos!==1?'s':''} uploaded`:'';
+  const grid     = document.getElementById('mediaGrid');
+  const filtered = items.filter(i=>activeFilter==='all'||i.type===activeFilter);
+  const count    = document.getElementById('mediaCount');
+  const photos   = items.filter(i=>i.type==='photo').length;
+  const videos   = items.filter(i=>i.type==='video').length;
+  count.textContent = items.length>0 ? `${photos} photo${photos!==1?'s':''} · ${videos} video${videos!==1?'s':''} saved on GitHub` : '';
 
   if(filtered.length===0){
-    grid.innerHTML=`<div class="gallery-empty"><div class="icon">📸</div><p>No photos or videos added yet.</p></div>`;
+    grid.innerHTML=`<div class="gallery-empty"><div class="icon">📸</div><p>No photos or videos yet.<br>${ownerMode?'Click <strong>"＋ Add Photos"</strong> or <strong>"＋ Add Videos"</strong> to upload!':'Check back soon.'}</p></div>`;
     return;
   }
-  grid.innerHTML=filtered.map(item=>{
-    const ri=items.indexOf(item);
+  grid.innerHTML = filtered.map(item=>{
+    const ri = items.indexOf(item);
     if(item.type==='photo'){
       return `<div class="media-item" data-type="photo">
         <img src="${item.src}" alt="${item.name}" loading="lazy" onclick="lbOpen(${ri})">
@@ -851,11 +1192,24 @@ function renderGallery(){
   }).join('');
 }
 
-function delMedia(e,ri){
+async function delMedia(e, ri){
   e.stopPropagation();
-  if(!ownerMode)return;
-  if(confirm('Remove this media?')){ items.splice(ri,1); renderGallery(); }
+  if(!ownerMode) return;
+  if(!confirm('Delete this media from GitHub permanently?')) return;
+  try {
+    showSpinner('Deleting from GitHub…');
+    const item = items[ri];
+    if(item.ghFile) await deleteFromGitHub(item.ghFile);
+    items.splice(ri,1);
+    renderGallery();
+
+    const state = await loadStateFromGitHub() || {};
+    if(state.gallery) state.gallery = state.gallery.filter(g=>g.ghFile!==item.ghFile);
+    await saveStateToGitHub(state);
+    hideSpinner();
+  } catch(err){ hideSpinner(); alert('Delete failed: '+err.message); }
 }
+
 function filterMedia(f,btn){
   activeFilter=f;
   document.querySelectorAll('.g-btn:not(.add)').forEach(b=>b.classList.remove('active'));
@@ -863,15 +1217,17 @@ function filterMedia(f,btn){
   renderGallery();
 }
 
-/* ── LIGHTBOX ── */
+/* ══════════════════════════════════
+   LIGHTBOX
+   ══════════════════════════════════ */
 function lbOpen(idx){
   lbIdx=idx; lbShow();
   document.getElementById('lb').classList.add('open');
   document.body.style.overflow='hidden';
 }
 function lbShow(){
-  const item=items[lbIdx];
-  const inner=document.getElementById('lbInner');
+  const item  = items[lbIdx];
+  const inner = document.getElementById('lbInner');
   inner.querySelectorAll('img,video').forEach(el=>el.remove());
   if(item.type==='photo'){
     const img=document.createElement('img'); img.src=item.src; inner.appendChild(img);
@@ -881,7 +1237,7 @@ function lbShow(){
   document.getElementById('lbCaption').textContent=`${lbIdx+1} / ${items.length}`;
 }
 function lbNav(dir,e){
-  if(e)e.stopPropagation();
+  if(e) e.stopPropagation();
   document.getElementById('lbInner').querySelectorAll('video').forEach(v=>v.pause());
   lbIdx=(lbIdx+dir+items.length)%items.length; lbShow();
 }
@@ -894,27 +1250,133 @@ function lbCloseBtn(){
 document.addEventListener('keydown',e=>{
   if(!document.getElementById('lb').classList.contains('open'))return;
   if(e.key==='ArrowRight') lbNav(1,null);
-  if(e.key==='ArrowLeft') lbNav(-1,null);
-  if(e.key==='Escape') lbCloseBtn();
+  if(e.key==='ArrowLeft')  lbNav(-1,null);
+  if(e.key==='Escape')     lbCloseBtn();
 });
 
-/* ── THERAPY PHOTOS ── */
-function triggerTP(idx){
-  if(!requireOwner())return;
-  document.getElementById('tpIn'+idx).click();
-}
-function loadTP(inp,idx){
-  if(!inp.files[0])return;
-  const r=new FileReader();
-  r.onload=e=>{
-    const img=document.getElementById('tpImg'+idx);
-    img.src=e.target.result; img.style.display='block';
-    document.getElementById('tp'+idx).classList.add('has-img');
-  };
-  r.readAsDataURL(inp.files[0]);
+/* ══════════════════════════════════
+   LOAD SAVED STATE ON PAGE OPEN
+   Works BOTH for website uploads AND
+   manually uploaded files on GitHub
+   ══════════════════════════════════ */
+async function loadSavedState(){
+  debugLog('Loading saved photos from GitHub…');
+  try {
+
+    // ── 1. Try site-state.json first (uploaded via website) ──
+    let state = await loadStateFromGitHub();
+
+    // ── 2. Also scan the photos/ folder directly ──
+    //    This catches files uploaded MANUALLY to GitHub
+    let folderFiles = [];
+    try {
+      const r = await fetch(
+        `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FOLDER}?ref=${GH_BRANCH}&t=${Date.now()}`,
+        { headers:{ Authorization:`token ${GH_TOKEN}`, Accept:'application/vnd.github.v3+json' } }
+      );
+      if(r.ok) folderFiles = await r.json();
+      debugLog(`Found ${folderFiles.length} file(s) in photos/ folder`);
+    } catch(e){ debugLog('Could not scan folder: '+e.message); }
+
+    // Helper: get raw URL for a file in the photos folder
+    const rawUrl = (name) =>
+      `https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/${GH_BRANCH}/${GH_FOLDER}/${name}?t=${Date.now()}`;
+
+    // Helper: check if a filename exists in folder listing
+    const hasFile = (name) => folderFiles.some(f => f.name && f.name.toLowerCase() === name.toLowerCase());
+
+    // ── LOGO ──
+    const logoFile = folderFiles.find(f => f.name && f.name.match(/^logo\.(jpg|jpeg|png|webp|gif)$/i));
+    const logoUrl  = state?.logo || (logoFile ? rawUrl(logoFile.name) : null);
+    if(logoUrl){
+      const img = document.getElementById('logoImg');
+      img.src = logoUrl; img.style.display = 'block';
+      document.getElementById('logoDef').style.display = 'none';
+      debugLog('✅ Logo loaded: ' + logoFile?.name);
+    }
+
+    // ── HERO ──
+    const heroFile = folderFiles.find(f => f.name && f.name.match(/^hero\.(jpg|jpeg|png|webp|gif|mp4|webm|mov)$/i));
+    const heroData = state?.hero || (heroFile ? { url: rawUrl(heroFile.name), isVideo: /\.(mp4|webm|mov)$/i.test(heroFile.name) } : null);
+    if(heroData){
+      document.getElementById('heroPlaceholder').style.display = 'none';
+      if(heroData.isVideo){
+        const v = document.getElementById('heroVid');
+        v.src = heroData.url; v.style.display = 'block';
+      } else {
+        const img = document.getElementById('heroImg');
+        img.src = heroData.url; img.style.display = 'block';
+      }
+      debugLog('✅ Hero loaded: ' + heroFile?.name);
+    }
+
+    // ── ABOUT ──
+    const aboutFile = folderFiles.find(f => f.name && f.name.match(/^about\.(jpg|jpeg|png|webp|gif|mp4|webm|mov)$/i));
+    const aboutData = state?.about || (aboutFile ? { url: rawUrl(aboutFile.name), isVideo: /\.(mp4|webm|mov)$/i.test(aboutFile.name) } : null);
+    if(aboutData){
+      document.getElementById('aboutHint').style.display = 'none';
+      if(aboutData.isVideo){
+        const v = document.getElementById('aboutVid');
+        v.src = aboutData.url; v.style.display = 'block';
+      } else {
+        const img = document.getElementById('aboutImg');
+        img.src = aboutData.url; img.style.display = 'block';
+      }
+      debugLog('✅ About loaded');
+    }
+
+    // ── THERAPY PHOTOS ──
+    // From state.json
+    if(state?.therapies){
+      Object.entries(state.therapies).forEach(([idx, url]) => {
+        const img = document.getElementById('tpImg'+idx);
+        if(img){ img.src = url; img.style.display = 'block'; }
+        const zone = document.getElementById('tp'+idx);
+        if(zone) zone.classList.add('has-img');
+      });
+    }
+    // Also check manually uploaded therapy-0.jpg … therapy-11.jpg
+    for(let i=0; i<12; i++){
+      const tFile = folderFiles.find(f => f.name && f.name.match(new RegExp(`^therapy-${i}\\.(jpg|jpeg|png|webp)$`,'i')));
+      if(tFile && !state?.therapies?.[i]){
+        const img = document.getElementById('tpImg'+i);
+        if(img){ img.src = rawUrl(tFile.name); img.style.display = 'block'; }
+        const zone = document.getElementById('tp'+i);
+        if(zone) zone.classList.add('has-img');
+        debugLog(`✅ Therapy-${i} loaded`);
+      }
+    }
+
+    // ── GALLERY ──
+    if(state?.gallery && state.gallery.length){
+      items = state.gallery;
+      renderGallery();
+      debugLog(`✅ Gallery loaded: ${items.length} item(s)`);
+    } else {
+      // Auto-load gallery-*.jpg/mp4 files uploaded manually
+      const galleryFiles = folderFiles.filter(f => f.name && f.name.match(/^gallery-.*\.(jpg|jpeg|png|webp|gif|mp4|webm)$/i));
+      if(galleryFiles.length){
+        items = galleryFiles.map(f => ({
+          src: rawUrl(f.name),
+          type: f.name.match(/\.(mp4|webm|mov)$/i) ? 'video' : 'photo',
+          name: f.name,
+          ghFile: f.name
+        }));
+        renderGallery();
+        debugLog(`✅ Gallery auto-loaded: ${items.length} file(s)`);
+      }
+    }
+
+    if(!logoUrl && !heroData && !aboutData) debugLog('ℹ️ No photos found yet. Upload some!');
+
+  } catch(err){
+    debugLog('❌ Load error: ' + err.message);
+  }
 }
 
-/* ── FORM ── */
+/* ══════════════════════════════════
+   APPOINTMENT FORM
+   ══════════════════════════════════ */
 function submitForm(){
   const n=document.getElementById('fname').value.trim();
   const p=document.getElementById('fphone').value.trim();
@@ -923,15 +1385,20 @@ function submitForm(){
   document.getElementById('successMsg').style.display='block';
 }
 
-/* ── SCROLL REVEAL ── */
+/* ══════════════════════════════════
+   SCROLL REVEAL
+   ══════════════════════════════════ */
 const obs=new IntersectionObserver(es=>{
-  es.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}});
+  es.forEach(e=>{ if(e.isIntersecting){ e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; }});
 },{threshold:0.1});
 document.querySelectorAll('.therapy-card,.step-card,.info-card').forEach(el=>{
   el.style.opacity='0'; el.style.transform='translateY(24px)';
   el.style.transition='opacity 0.5s ease,transform 0.5s ease';
   obs.observe(el);
 });
+
+/* ── Boot ── */
+detectBranch().then(() => loadSavedState());
 </script>
 </body>
 </html>
